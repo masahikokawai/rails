@@ -1,0 +1,73 @@
+describe 'rspec3' do
+
+  # app/models/weather_bot.rb
+
+  # ①
+  it 'エラーなく予報をツイートすること' do
+    # 1. Twitter::REST::Client(Twitter client) のニセモノ、つまりモックを作ります
+    #    double というメソッドを使うと、モックオブジェクトを作れます
+    #    double("hoge")は、テスト失敗時のメッセージに表示
+    twitter_client_mock = double('Twitter client')
+
+    # 2. updateメソッドが呼びだせるようにする
+    # アプリ側の
+    #   def tweet_forecast
+    #     twitter_client.update '今日は晴れです'
+    #   end
+    # spec側の
+    #   allow(モックオブジェクト).to receive(メソッド名)
+    # モックを使うときは、単に実装を置き換えたいだけなのか、
+    # それともメソッドの呼び出しも検証したいのかに応じて、 allow と expect を使い分ける必要があります。
+    allow(twitter_client_mock).to receive(:update)
+#    expect(twitter_client_mock).to receive(:update)
+
+    # 3. アプリケーションコードにモックをこっそり送り込む
+    # ★allow(実装を置き換えたいオブジェクト).to receive(置き換えたいメソッド名).and_return(返却したい値やオブジェクト)
+#    weather_bot = WeatherBot.new
+    # twitter_clientメソッドが呼ばれたら上で作ったモックを返すように実装を書き換える
+#    allow(weather_bot).to receive(:twitter_client).and_return(twitter_client_mock)
+
+#    expect{ weather_bot.tweet_forecast }.not_to raise_error
+  end
+
+  # ②
+  it 'エラーが起きたら通知すること' do
+    twitter_client_mock = double('Twitter client')
+    # updateメソッドが呼ばれたらエラーを発生させる
+#    allow(twitter_client_mock).to receive(:update).and_raise('エラーが発生しました')
+#    expect(twitter_client_mock).to receive(:update).and_raise('エラーが発生しました')
+#    expect(twitter_client_mock).to receive(:update).with('今日は晴れです')
+#    expect(twitter_client_mock).to receive(:update).with('今日は晴れです').once
+
+    # ハッシュで2つ以上の引数として渡す場合
+#    expect(user).to receive(:save_profile).with(name: 'Alice', email: 'alice@example.com')
+    # ハッシュ全体ではなく、特定のkeyとvalueだけに着目する場合は hash_including を使います。
+    expect(user).to receive(:save_profile).with(hash_including(name: 'Alice'))
+
+
+#    weather_bot = WeatherBot.new
+#    allow(weather_bot).to receive(:twitter_client).and_return(twitter_client_mock)
+    # ★どうしてもモックを挟み込むことができない場合：allow_any_instance_of
+    # WeatherBotクラスの全インスタンスに対して、twitter_clientメソッドが呼ばれたときにモックを返すようにする
+    # 使用上の注意
+    # ただし、RSpecの公式ドキュメントによると「allow_any_instance_of はあまり使わない方がよい」と書いてあります。
+    # 理由を簡単にまとめると以下の通りです。
+    # モックのAPIは個々のインスタンスに対して作用することを前提にしているので、予期しない挙動や理解しづらいテストコードの原因になる。
+    # この機能が必要になるということは、テストしようとしているアプリケーションの設計自体がイケてない可能性がある。
+    # allow_any_instance_of の中身は複雑な実装になっていて昔から不具合が多い。
+    # というわけで、安易に allow_any_instance_of には手を出さず、どうしても必要な場合だけに限定するのがよいと思います。
+    allow_any_instance_of(WeatherBot).to receive(:twitter_client).and_return(twitter_client_mock)
+
+
+    # notifyメソッドが呼ばれることを検証する
+#    expect(weather_bot).to receive(:notify)
+#    expect(weather_bot).to receive(:notify).once
+
+    # tweet_forecastメソッドを呼び出す
+    # weather_botのnotifyメソッドが呼び出されたらテストはパスする
+#    weather_bot.tweet_forecast
+  end
+
+end
+
+
