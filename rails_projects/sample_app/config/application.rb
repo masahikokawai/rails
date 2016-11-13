@@ -33,5 +33,13 @@ module SampleApp
     config.active_record.raise_in_transactional_callbacks = true
 
     config.assets.precompile += %w(*.png *.jpg *.jpeg *.gif)
+
+    # 以下のエラー対応
+    # ActionController::RoutingError (uninitialized constant ApplicationController::SessionsHelper):
+    #  app/controllers/application_controller.rb:5:in `<class:ApplicationController>'
+    #  app/controllers/application_controller.rb:1:in `<top (required)>'
+    #  app/controllers/static_pages_controller.rb:1:in `<top (required)>'
+#    config.autoload_paths += %W(#{config.root}/lib)
+
   end
 end
